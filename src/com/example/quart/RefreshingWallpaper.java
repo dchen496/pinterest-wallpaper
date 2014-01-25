@@ -118,11 +118,15 @@ public class RefreshingWallpaper extends WallpaperService {
 					} else if ((double)dstwidth / dstheight * srcheight > srcwidth) {
 						cropheight = (int) ((double)dstwidth / srcwidth * srcheight);
 					}
-					Rect target = new Rect(cropheight + srcheight/2, cropwidth - srcwidth/2,
+					Log.e("k", Integer.toString(cropwidth));
+					Log.e("k", Integer.toString(cropheight));
+
+					Rect target = new Rect(cropwidth - srcwidth/2, cropheight + srcheight/2, 
 							cropwidth + srcwidth/2, cropheight - srcheight / 2);
 
 					Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
-					c.drawBitmap(scaled, null, target, new Paint());
+					c.drawBitmap(scaled, (dstwidth - cropwidth)/(float)2.0,
+							(dstheight - cropheight)/(float)2.0, new Paint());
 				}
 			} finally {
 				if(c != null)
