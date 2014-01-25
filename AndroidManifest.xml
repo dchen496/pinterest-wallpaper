@@ -7,9 +7,9 @@
     <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="17" />
-    
+
     <uses-feature android:name="android.software.live_wallpaper" />
-    
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -24,17 +24,24 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service 
+
+        <service
             android:name="com.example.quart.RefreshingWallpaper"
             android:label="@string/wallpaper_refreshing"
             android:permission="android.permission.BIND_WALLPAPER" >
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>
-            <meta-data 
-            	android:name="android.service.wallpaper"
+
+            <meta-data
+                android:name="android.service.wallpaper"
                 android:resource="@xml/refreshing_wallpaper" />
         </service>
+
+        <activity
+            android:name="com.example.quart.PreferencesActivity"
+            android:label="@string/title_activity_preferences"
+            android:exported="true" />
     </application>
 
 </manifest>
