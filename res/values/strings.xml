@@ -6,5 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="wallpaper_refreshing">Quart</string>
     <string name="title_activity_preferences">Quart Preferences</string>
+    <string name="board_url">Board URL</string>
+    <string name="board_url_summary">Board to populate images from.</string>
 
 </resources>
