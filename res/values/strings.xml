@@ -1,12 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Quart</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
     <string name="wallpaper_refreshing">Quart</string>
     <string name="title_activity_preferences">Quart Preferences</string>
     <string name="board_url">Board URL</string>
-    <string name="board_url_summary">Board to populate images from.</string>
+    <string name="board_url_summary">Board to populate images from</string>
+    <string name="default_board">http://www.pinterest.com/pandemoniumvp/cars/</string>
+    <string name="frequency">Update Frequency</string>
+    <string name="frequency_summary">How often a new picture is fetched</string>
 
+    <string-array name="entries">
+        <item>5 seconds</item>
+        <item>1 minute</item>
+        <item>5 minutes</item>
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>60 minutes</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>12 hours</item>
+        <item>1 day</item>
+    </string-array>
 </resources>

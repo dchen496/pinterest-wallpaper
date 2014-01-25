@@ -4,5 +4,14 @@
             android:dialogTitle="@string/board_url"
             android:key="edittext_pinterest_board_url"
             android:summary="@string/board_url_summary"
-            android:title="@string/board_url" />
+            android:title="@string/board_url"
+            android:defaultValue="@string/default_board" />
+        <ListPreference
+                android:key="list_pinterest_frequency"
+                android:title="@string/frequency"
+                android:summary="@string/frequency_summary"
+                android:entries="@array/entries"
+                android:entryValues="@array/entry_values"
+                android:dialogTitle="@string/frequency"
+                android:defaultValue="@integer/default_frequency" />
 </PreferenceScreen>
