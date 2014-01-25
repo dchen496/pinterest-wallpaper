@@ -24,6 +24,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	int duration;
 	Timer timer;
 	RefreshingWallpaperEngine engine;
+	Bitmap previousFrame;
 
 	@Override
 	public void onCreate() {
@@ -103,6 +104,51 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			public void onPrepareLoad(final Drawable d) {}
 		}
 
+		class Fader {
+			private final int frames = 51;
+			private final int ms = 30;
+			private Bitmap begin, end;
+			private Timer fadetimer;
+			private int frame;
+			
+			Fader(Bitmap _begin, Bitmap _end) {
+				begin = _begin;
+				end = _end;
+				fadetimer = new Timer();
+				fadetimer.scheduleAtFixedRate(new RedrawTask(), 0, ms);
+				frame = 0;
+			}
+			
+			class RedrawTask extends TimerTask {
+				@Override
+				public void run() {
+					redraw();
+				}
+			}
+			
+			private void redraw() {
+				frame++;
+				Paint paint = new Paint();
+				if(frame >= frames) {
+					fadetimer.cancel();
+				} else {
+					paint.setAlpha(255 / frames);
+				}
+				
+				SurfaceHolder sh = getSurfaceHolder();
+				Canvas c = null;
+				try {
+					c = sh.lockCanvas();
+					if(c != null) {
+						c.drawBitmap(end, 0, 0, paint);
+					}
+				} finally {
+					if(c != null)
+						sh.unlockCanvasAndPost(c);
+				}
+			}
+		}
+		
 		private void draw(final Bitmap b) {
 			SurfaceHolder sh = getSurfaceHolder();
 			Canvas c = null;
@@ -123,12 +169,12 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					Log.e("k", Integer.toString(cropwidth));
 					Log.e("k", Integer.toString(cropheight));
 
-					Rect target = new Rect(cropwidth - srcwidth/2, cropheight + srcheight/2,
-							cropwidth + srcwidth/2, cropheight - srcheight / 2);
-
 					Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
-					c.drawBitmap(scaled, (dstwidth - cropwidth)/(float)2.0,
-							(dstheight - cropheight)/(float)2.0, new Paint());
+					Bitmap cropped = Bitmap.createBitmap(scaled, 
+							(cropwidth - dstwidth)/2, (cropheight - dstheight)/2,
+							dstwidth, dstheight);
+					new Fader(previousFrame, cropped);
+					previousFrame = cropped;
 				}
 			} finally {
 				if(c != null)
