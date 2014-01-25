@@ -77,7 +77,18 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		public void onTouchEvent(final MotionEvent ev) {}
 
 		@Override
-		public void onVisibilityChanged(final boolean visible) {}
+		public void onVisibilityChanged(final boolean visible) {
+			if(visible) {
+				if(timer != null) {
+					timer = new Timer();
+					timer.scheduleAtFixedRate(new RefreshTask(), 0, duration*1000);
+				}
+			} else {
+				if(timer != null)
+					timer.cancel();
+				timer = null;
+			}
+		}
 
 		// accepted parameters:
 		// url=[a pinterest board url] - must be URL escaped
