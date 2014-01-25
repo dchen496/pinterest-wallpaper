@@ -35,7 +35,6 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 
 	@Override
 	public void onDestroy() {
-		timer.cancel();
 		super.onDestroy();
 	}
 
@@ -61,10 +60,9 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		@Override
 		public void onSurfaceChanged(final SurfaceHolder sh,
 				final int format, final int w, final int h) {
-			if (timer == null)
-				timer = new Timer();
-			else
+			if (timer != null)
 				timer.cancel();
+			timer = new Timer();
 			timer.scheduleAtFixedRate(new RefreshTask(), 0, duration*1000);
 		}
 
@@ -136,7 +134,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					Log.e("k", Integer.toString(cropwidth));
 					Log.e("k", Integer.toString(cropheight));
 
-					Rect target = new Rect(cropwidth - srcwidth/2, cropheight + srcheight/2, 
+					Rect target = new Rect(cropwidth - srcwidth/2, cropheight + srcheight/2,
 							cropwidth + srcwidth/2, cropheight - srcheight / 2);
 
 					Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
