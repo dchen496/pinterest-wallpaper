@@ -67,17 +67,10 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		}
 
 		@Override
-		public void onTouchEvent(final MotionEvent ev) {
-		}
+		public void onTouchEvent(final MotionEvent ev) {}
 
 		@Override
-		public void onVisibilityChanged(final boolean visible) {
-			if(visible) {
-
-			} else {
-
-			}
-		}
+		public void onVisibilityChanged(final boolean visible) {}
 
 		public void load() {
 			Log.e("k", "loading");
@@ -94,24 +87,16 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			}
 
 			@Override
-			public void onBitmapFailed(final Drawable d) {
-				// TODO Auto-generated method stub
-
-			}
+			public void onBitmapFailed(final Drawable d) {}
 
 			@Override
 			public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
 				Log.e("k", "loaded");
-
-				// TODO Auto-generated method stub
 				owner.draw(b);
 			}
 
 			@Override
-			public void onPrepareLoad(final Drawable d) {
-				// TODO Auto-generated method stub
-
-			}
+			public void onPrepareLoad(final Drawable d) {}
 		}
 
 		private void draw(final Bitmap b) {
