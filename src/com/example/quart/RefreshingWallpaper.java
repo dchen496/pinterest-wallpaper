@@ -22,6 +22,7 @@ import com.squareup.picasso.Target;
 
 public class RefreshingWallpaper extends WallpaperService implements OnSharedPreferenceChangeListener {
 	int duration;
+	String source;
 	Timer timer;
 	RefreshingWallpaperEngine engine;
 
@@ -31,6 +32,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
+		source = (prefs.getString("edittext_pinterest_board_url", getString(R.string.default_board)));
 	}
 
 	@Override
@@ -79,7 +81,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		public void load() {
 			Log.e("k", "loading");
 			Picasso.with(RefreshingWallpaper.this)
-			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage&no-cache="+Double.toString(Math.random()))
+			.load("http://quart.herokuapp.com/board_images?" + processSource() + "&no-cache="+Double.toString(Math.random()))
 			.into(new CanvasTarget(this));
 		}
 
@@ -141,7 +143,13 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
 		if (key.equals("list_pinterest_frequency")) {
 			duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
+		} else if (key.equals("edittext_pinterest_board_url")) {
+			source = (prefs.getString("edittext_pinterest_board_url", getString(R.string.default_board)));
 		}
 		engine.onSurfaceChanged(null, 0, 0, 0);
+	}
+
+	public String processSource() {
+		return "user=marialetteboer&slug=stairs-and-storage";
 	}
 }
