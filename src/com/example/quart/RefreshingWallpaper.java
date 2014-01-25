@@ -6,6 +6,7 @@ import android.view.SurfaceHolder;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import java.util.Timer;
@@ -106,7 +107,22 @@ public class RefreshingWallpaper extends WallpaperService {
 			try {
 				c = sh.lockCanvas();
 				if(c != null) {
-					c.drawBitmap(b, 0, 0, new Paint());
+					int srcwidth = b.getWidth();
+					int srcheight = b.getHeight();
+					int dstwidth = c.getWidth();
+					int dstheight = c.getHeight();
+					int cropwidth = dstwidth;
+					int cropheight = dstheight;
+					if((double)dstheight / dstwidth * srcwidth > srcheight) {
+						cropwidth = (int) ((double)dstheight / srcheight * srcwidth);
+					} else if ((double)dstwidth / dstheight * srcheight > srcwidth) {
+						cropheight = (int) ((double)dstwidth / srcwidth * srcheight);
+					}
+					Rect target = new Rect(cropheight + srcheight/2, cropwidth - srcwidth/2,
+							cropwidth + srcwidth/2, cropheight - srcheight / 2);
+
+					Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
+					c.drawBitmap(scaled, null, target, new Paint());
 				}
 			} finally {
 				if(c != null)
