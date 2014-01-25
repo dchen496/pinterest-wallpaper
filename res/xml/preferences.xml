@@ -13,5 +13,5 @@
                 android:entries="@array/entries"
                 android:entryValues="@array/entry_values"
                 android:dialogTitle="@string/frequency"
-                android:defaultValue="@integer/default_frequency" />
+                android:defaultValue="@string/default_frequency" />
 </PreferenceScreen>
