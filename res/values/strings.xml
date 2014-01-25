@@ -5,8 +5,9 @@
     <string name="hello_world">Hello world!</string>
     <string name="wallpaper_refreshing">Quart</string>
     <string name="title_activity_preferences">Quart Preferences</string>
-    <string name="board_url">Board URL</string>
-    <string name="board_url_summary">Board to populate images from</string>
+    <string name="board_url">Board Location</string>
+    <string name="board_url_summary">Where the images will be from</string>
+    <string name="board_dialog">Accepted formats:\n[URL]\n[Board ID]\n[Username], [Board Name]</string>
     <string name="default_board">http://www.pinterest.com/pandemoniumvp/cars/</string>
     <string name="frequency">Update Frequency</string>
     <string name="frequency_summary">How often a new picture is fetched</string>
@@ -24,7 +25,7 @@
         <item>1 day</item>
     </string-array>
     
-    <string name="default_frequency">3600</string>
+    <string name="default_frequency">5</string>
     <string-array name="entry_values">
         <item>5</item>
         <item>60</item>

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-        <EditTextPreference
-            android:dialogTitle="@string/board_url"
-            android:key="edittext_pinterest_board_url"
-            android:summary="@string/board_url_summary"
-            android:title="@string/board_url"
-            android:defaultValue="@string/default_board" />
-        <ListPreference
-                android:key="list_pinterest_frequency"
-                android:title="@string/frequency"
-                android:summary="@string/frequency_summary"
-                android:entries="@array/entries"
-                android:entryValues="@array/entry_values"
-                android:dialogTitle="@string/frequency"
-                android:defaultValue="@string/default_frequency" />
+	<EditTextPreference
+		android:defaultValue="@string/default_board"
+		android:dialogTitle="@string/board_url"
+		android:dialogMessage="@string/board_dialog"
+		android:key="edittext_pinterest_board_url"
+		android:summary="@string/board_url_summary"
+		android:title="@string/board_url" />
+	<ListPreference
+		android:defaultValue="@string/default_frequency"
+		android:dialogTitle="@string/frequency"
+		android:entries="@array/entries"
+		android:entryValues="@array/entry_values"
+		android:key="list_pinterest_frequency"
+		android:summary="@string/frequency_summary"
+		android:title="@string/frequency" />
 </PreferenceScreen>

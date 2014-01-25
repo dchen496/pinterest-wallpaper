@@ -1,5 +1,7 @@
 package com.example.quart;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -150,6 +152,16 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	}
 
 	public String processSource() {
-		return "user=marialetteboer&slug=stairs-and-storage";
+		if (source.trim().startsWith("http")) try {
+			return "url=" + URLEncoder.encode(source.trim(), "ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			Log.e("k", "help", e);
+		} else if (source.trim().matches("\\b\\d+\\b")) {
+			return "id=" + source.trim();
+		} else if (source.contains(",")) {
+			int comma = source.indexOf(',');
+			return "user=" + source.substring(0, comma).toLowerCase().trim() + "&slug=" + source.substring(comma + 1).toLowerCase().trim();
+		}
+		return getString(R.string.default_board);
 	}
 }
