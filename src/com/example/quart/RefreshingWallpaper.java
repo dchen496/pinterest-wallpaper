@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -27,7 +28,6 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	String source;
 	Timer timer;
 	RefreshingWallpaperEngine engine;
-	Bitmap previousFrame;
 
 	@Override
 	public void onCreate() {
@@ -50,9 +50,11 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	}
 
 	class RefreshingWallpaperEngine extends Engine {
-
+		Fader fader;
+		
 		RefreshingWallpaperEngine() {
-			 setTouchEventsEnabled(true);
+			setTouchEventsEnabled(true);
+			fader = new Fader();
 		}
 
 		class RefreshTask extends TimerTask {
@@ -101,7 +103,8 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			@Override
 			public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
 				Log.e("k", "loaded");
-				owner.draw(b);
+				if(!fader.busy())
+					owner.draw(b);
 			}
 
 			@Override
@@ -111,32 +114,62 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		class Fader {
 			private final int frames = 51;
 			private final int ms = 30;
-			private Bitmap begin, end;
+			private Bitmap current, prev;
 			private Timer fadetimer;
 			private int frame;
 			
-			Fader(Bitmap _begin, Bitmap _end) {
-				begin = _begin;
-				end = _end;
-				fadetimer = new Timer();
-				fadetimer.scheduleAtFixedRate(new RedrawTask(), 0, ms);
-				frame = 0;
-			}
-			
 			class RedrawTask extends TimerTask {
+				private Bitmap a, b;
+				
+				RedrawTask(Bitmap _current, Bitmap _prev) {
+					a = _current;
+					b = _prev;
+				}
 				@Override
 				public void run() {
-					redraw();
+					redraw(a, b);
 				}
 			}
 			
-			private void redraw() {
+			public void update(Bitmap b) {
+				Log.e("update", b.toString());
+				SurfaceHolder sh = getSurfaceHolder();
+				if(current == null) {
+					Canvas c = null;
+					try {
+						c = sh.lockCanvas();
+						if(c != null)
+							c.drawBitmap(b, 0, 0, new Paint());
+					} finally {
+						if(c != null)
+							sh.unlockCanvasAndPost(c);
+					}
+					current = b;
+				} else {
+					frame = 0;
+					prev = current;
+					current = b;
+					if(fadetimer != null)
+						fadetimer.cancel();
+					fadetimer = new Timer();
+					fadetimer.scheduleAtFixedRate(new RedrawTask(current, prev), 0, ms);
+				}
+			}
+			
+			private void redraw(Bitmap current, Bitmap prev) {
 				frame++;
-				Paint paint = new Paint();
+
+				Paint paint1 = new Paint();
+				Paint paint2 = new Paint();
+
+				int alpha = frame * 5;
 				if(frame >= frames) {
 					fadetimer.cancel();
+					fadetimer = null;
+					return;
 				} else {
-					paint.setAlpha(255 / frames);
+					paint1.setAlpha(alpha);
+					paint2.setAlpha(255-alpha);
 				}
 				
 				SurfaceHolder sh = getSurfaceHolder();
@@ -144,46 +177,57 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 				try {
 					c = sh.lockCanvas();
 					if(c != null) {
-						c.drawBitmap(end, 0, 0, paint);
+						c.drawBitmap(prev, 0, 0, paint2);
+						c.drawBitmap(current, 0, 0, paint1);
 					}
 				} finally {
 					if(c != null)
 						sh.unlockCanvasAndPost(c);
 				}
 			}
+			
+			public boolean busy() {
+				return fadetimer != null;
+			}
 		}
 		
 		private void draw(final Bitmap b) {
 			SurfaceHolder sh = getSurfaceHolder();
 			Canvas c = null;
+			int srcwidth = b.getWidth();
+			int srcheight = b.getHeight();
+			int dstwidth = 0, dstheight = 0;
+			boolean success = false;
 			try {
 				c = sh.lockCanvas();
 				if(c != null) {
-					int srcwidth = b.getWidth();
-					int srcheight = b.getHeight();
-					int dstwidth = c.getWidth();
-					int dstheight = c.getHeight();
-					int cropwidth = dstwidth;
-					int cropheight = dstheight;
-					if((double)dstheight / dstwidth * srcwidth > srcheight) {
-						cropwidth = (int) ((double)dstheight / srcheight * srcwidth);
-					} else if ((double)dstwidth / dstheight * srcheight > srcwidth) {
-						cropheight = (int) ((double)dstwidth / srcwidth * srcheight);
-					}
-					Log.e("k", Integer.toString(cropwidth));
-					Log.e("k", Integer.toString(cropheight));
-
-					Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
-					Bitmap cropped = Bitmap.createBitmap(scaled, 
-							(cropwidth - dstwidth)/2, (cropheight - dstheight)/2,
-							dstwidth, dstheight);
-					new Fader(previousFrame, cropped);
-					previousFrame = cropped;
+					dstwidth = c.getWidth();
+					dstheight = c.getHeight();
+					success = true;
 				}
 			} finally {
 				if(c != null)
 					sh.unlockCanvasAndPost(c);
 			}
+			if(!success)
+				return;
+			
+			int cropwidth = dstwidth;
+			int cropheight = dstheight;
+			if((double)dstheight / dstwidth * srcwidth > srcheight) {
+				cropwidth = (int) ((double)dstheight / srcheight * srcwidth);
+			} else if ((double)dstwidth / dstheight * srcheight > srcwidth) {
+				cropheight = (int) ((double)dstwidth / srcwidth * srcheight);
+			}
+			
+			Log.e("k", Integer.toString(cropwidth));
+			Log.e("k", Integer.toString(cropheight));
+
+			Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
+			Bitmap cropped = Bitmap.createBitmap(scaled, 
+					(cropwidth - dstwidth)/2, (cropheight - dstheight)/2,
+					dstwidth, dstheight);
+			fader.update(cropped);
 		}
 	}
 
