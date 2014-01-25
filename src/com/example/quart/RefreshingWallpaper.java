@@ -68,7 +68,7 @@ public class RefreshingWallpaper extends WallpaperService {
 		public void load() {
 			Log.e("k", "loading");
 			Picasso.with(RefreshingWallpaper.this)
-			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage")
+			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage&no-cache="+Double.toString(Math.random()))
 			.into(new CanvasTarget(this));
 		}
 		
@@ -77,17 +77,6 @@ public class RefreshingWallpaper extends WallpaperService {
 			
 			public CanvasTarget(RefreshingWallpaperEngine _owner) {
 				owner = _owner;
-			}
-			
-			public boolean equals(Object other) {
-				if(!(other instanceof CanvasTarget)) {
-					return false;
-				}
-				return ((CanvasTarget) other).owner == owner;
-			}
-			
-			public int hashCode() {
-				return owner.hashCode();
 			}
 
 			@Override
