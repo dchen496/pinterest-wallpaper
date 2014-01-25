@@ -1,93 +1,108 @@
 package com.example.quart;
 
-import android.service.wallpaper.WallpaperService;
-import android.util.Log;
-import android.view.SurfaceHolder;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
+import android.service.wallpaper.WallpaperService;
+import android.util.Log;
 import android.view.MotionEvent;
-import java.util.Timer;
-import java.util.TimerTask;
+import android.view.SurfaceHolder;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 
-public class RefreshingWallpaper extends WallpaperService {
+public class RefreshingWallpaper extends WallpaperService implements OnSharedPreferenceChangeListener {
+	int duration;
+	Timer timer;
+	RefreshingWallpaperEngine engine;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		prefs.registerOnSharedPreferenceChangeListener(this);
+		duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
 	}
-	
+
 	@Override
 	public void onDestroy() {
+		timer.cancel();
 		super.onDestroy();
 	}
-	
+
 	@Override
 	public Engine onCreateEngine() {
-		return new RefreshingWallpaperEngine();
+		engine = new RefreshingWallpaperEngine();
+		return engine;
 	}
-	
-	class RefreshingWallpaperEngine extends Engine {		
-		Timer timer;
-		
+
+	class RefreshingWallpaperEngine extends Engine {
+
 		RefreshingWallpaperEngine() {
 			 setTouchEventsEnabled(true);
 		}
-		
+
 		class RefreshTask extends TimerTask {
 			@Override
 			public void run() {
 				load();
 			}
 		}
-		
+
 		@Override
-		public void onSurfaceChanged(SurfaceHolder sh,
-				int format, int w, int h) {
-			timer = new Timer();
-			timer.scheduleAtFixedRate(new RefreshTask(), 0, 10000);
+		public void onSurfaceChanged(final SurfaceHolder sh,
+				final int format, final int w, final int h) {
+			if (timer == null)
+				timer = new Timer();
+			else
+				timer.cancel();
+			timer.scheduleAtFixedRate(new RefreshTask(), 0, duration*1000);
 		}
-		
+
 		@Override
-		public void onTouchEvent(MotionEvent ev) {
+		public void onTouchEvent(final MotionEvent ev) {
 		}
-		
+
 		@Override
-		public void onVisibilityChanged(boolean visible) {
+		public void onVisibilityChanged(final boolean visible) {
 			if(visible) {
-				
+
 			} else {
-				
+
 			}
 		}
-		
+
 		public void load() {
 			Log.e("k", "loading");
 			Picasso.with(RefreshingWallpaper.this)
 			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage&no-cache="+Double.toString(Math.random()))
 			.into(new CanvasTarget(this));
 		}
-		
+
 		class CanvasTarget implements Target {
 			private RefreshingWallpaperEngine owner;
-			
-			public CanvasTarget(RefreshingWallpaperEngine _owner) {
+
+			public CanvasTarget(final RefreshingWallpaperEngine _owner) {
 				owner = _owner;
 			}
 
 			@Override
-			public void onBitmapFailed(Drawable d) {
+			public void onBitmapFailed(final Drawable d) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
-			public void onBitmapLoaded(Bitmap b, LoadedFrom l) {
+			public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
 				Log.e("k", "loaded");
 
 				// TODO Auto-generated method stub
@@ -95,13 +110,13 @@ public class RefreshingWallpaper extends WallpaperService {
 			}
 
 			@Override
-			public void onPrepareLoad(Drawable d) {
+			public void onPrepareLoad(final Drawable d) {
 				// TODO Auto-generated method stub
-				
+
 			}
 		}
-		
-		private void draw(Bitmap b) {
+
+		private void draw(final Bitmap b) {
 			SurfaceHolder sh = getSurfaceHolder();
 			Canvas c = null;
 			try {
@@ -129,5 +144,13 @@ public class RefreshingWallpaper extends WallpaperService {
 					sh.unlockCanvasAndPost(c);
 			}
 		}
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
+		if (key.equals("list_pinterest_frequency")) {
+			duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
+		}
+		engine.onSurfaceChanged(null, 0, 0, 0);
 	}
 }
