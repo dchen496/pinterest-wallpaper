@@ -68,7 +68,7 @@ public class RefreshingWallpaper extends WallpaperService {
 		public void load() {
 			Log.e("k", "loading");
 			Picasso.with(RefreshingWallpaper.this)
-			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage&no-cache="+Double.toString(Math.random()))
+			.load("http://quart.herokuapp.com/board_images?user=marialetteboer&slug=stairs-and-storage")
 			.into(new CanvasTarget(this));
 		}
 		
