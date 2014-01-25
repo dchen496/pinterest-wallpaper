@@ -72,6 +72,10 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		@Override
 		public void onVisibilityChanged(final boolean visible) {}
 
+		// accepted parameters:
+		// url=[a pinterest board url] - must be URL escaped
+		// id=[a pinterest board id]
+		// user=[user name]&slug=[the board's name, in a format like stairs-and-storage]
 		public void load() {
 			Log.e("k", "loading");
 			Picasso.with(RefreshingWallpaper.this)
