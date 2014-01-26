@@ -40,7 +40,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
 		source = (prefs.getString("edittext_pinterest_board_url", getString(R.string.default_board)));
-		cache = new Cache(40);
+		cache = new Cache(20);
 		loadTimer = new Timer();
 		(new CacheLoadTask()).run();
 	}
