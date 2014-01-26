@@ -7,7 +7,7 @@
     <string name="title_activity_preferences">Preferences</string>
     <string name="board_url">Board Location</string>
     <string name="board_url_summary">Where the images will be from</string>
-    <string name="board_dialog">Accepted formats:\n[URL]\n[Board ID]\n[Username], [Board Name]</string>
+    <string name="board_dialog">Accepted formats:\n[URL]\n[Board ID]\n[Username], [Board Name]\n[Search Term]</string>
     <string name="default_board">http://www.pinterest.com/pandemoniumvp/cars/</string>
     <string name="frequency">Update Frequency</string>
     <string name="frequency_summary">How often a new picture is fetched</string>
