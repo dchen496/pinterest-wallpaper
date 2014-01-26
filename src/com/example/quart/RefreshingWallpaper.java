@@ -115,7 +115,9 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			}
 
 			@Override
-			public void onBitmapFailed(final Drawable d) {}
+			public void onBitmapFailed(final Drawable d) {
+				Log.e("k", "load failure");
+			}
 
 			@Override
 			public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
@@ -151,26 +153,15 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			public void update(final Bitmap b) {
 				Log.e("update", b.toString());
 				SurfaceHolder sh = getSurfaceHolder();
-				if(current == null) {
-					Canvas c = null;
-					try {
-						c = sh.lockCanvas();
-						if(c != null)
-							c.drawBitmap(b, 0, 0, new Paint());
-					} finally {
-						if(c != null)
-							sh.unlockCanvasAndPost(c);
-					}
-					current = b;
-				} else {
-					frame = 0;
-					prev = current;
-					current = b;
-					if(fadetimer != null)
-						fadetimer.cancel();
-					fadetimer = new Timer();
-					fadetimer.scheduleAtFixedRate(new RedrawTask(current, prev), 0, ms);
-				}
+				if(current == null)
+					current = Bitmap.createBitmap(b.getWidth(), b.getHeight(), Bitmap.Config.ARGB_8888);
+				frame = 0;
+				prev = current;
+				current = b;
+				if(fadetimer != null)
+					fadetimer.cancel();
+				fadetimer = new Timer();
+				fadetimer.scheduleAtFixedRate(new RedrawTask(current, prev), 0, ms);
 			}
 
 			private void redraw(final Bitmap current, final Bitmap prev) {
