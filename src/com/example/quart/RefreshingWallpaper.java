@@ -10,9 +10,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.service.wallpaper.WallpaperService;
@@ -52,7 +50,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 
 	class RefreshingWallpaperEngine extends Engine {
 		Fader fader;
-		
+
 		RefreshingWallpaperEngine() {
 			setTouchEventsEnabled(true);
 			fader = new Fader();
@@ -129,11 +127,11 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			private Bitmap current, prev;
 			private Timer fadetimer;
 			private int frame;
-			
+
 			class RedrawTask extends TimerTask {
 				private Bitmap a, b;
-				
-				RedrawTask(Bitmap _current, Bitmap _prev) {
+
+				RedrawTask(final Bitmap _current, final Bitmap _prev) {
 					a = _current;
 					b = _prev;
 				}
@@ -142,8 +140,8 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					redraw(a, b);
 				}
 			}
-			
-			public void update(Bitmap b) {
+
+			public void update(final Bitmap b) {
 				Log.e("update", b.toString());
 				SurfaceHolder sh = getSurfaceHolder();
 				if(current == null) {
@@ -167,8 +165,8 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					fadetimer.scheduleAtFixedRate(new RedrawTask(current, prev), 0, ms);
 				}
 			}
-			
-			private void redraw(Bitmap current, Bitmap prev) {
+
+			private void redraw(final Bitmap current, final Bitmap prev) {
 				frame++;
 
 				Paint paint1 = new Paint();
@@ -183,7 +181,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					paint1.setAlpha(alpha);
 					paint2.setAlpha(255-alpha);
 				}
-				
+
 				SurfaceHolder sh = getSurfaceHolder();
 				Canvas c = null;
 				try {
@@ -197,12 +195,12 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 						sh.unlockCanvasAndPost(c);
 				}
 			}
-			
+
 			public boolean busy() {
 				return fadetimer != null;
 			}
 		}
-		
+
 		private void draw(final Bitmap b) {
 			SurfaceHolder sh = getSurfaceHolder();
 			Canvas c = null;
@@ -223,7 +221,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			}
 			if(!success)
 				return;
-			
+
 			int cropwidth = dstwidth;
 			int cropheight = dstheight;
 			if((double)dstheight / dstwidth * srcwidth > srcheight) {
@@ -231,12 +229,12 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			} else if ((double)dstwidth / dstheight * srcheight > srcwidth) {
 				cropheight = (int) ((double)dstwidth / srcwidth * srcheight);
 			}
-			
+
 			Log.e("k", Integer.toString(cropwidth));
 			Log.e("k", Integer.toString(cropheight));
 
 			Bitmap scaled = Bitmap.createScaledBitmap(b, cropwidth, cropheight, true);
-			Bitmap cropped = Bitmap.createBitmap(scaled, 
+			Bitmap cropped = Bitmap.createBitmap(scaled,
 					(cropwidth - dstwidth)/2, (cropheight - dstheight)/2,
 					dstwidth, dstheight);
 			fader.update(cropped);
@@ -264,7 +262,11 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		} else if (source.contains(",")) {
 			int comma = source.indexOf(',');
 			return "user=" + source.substring(0, comma).toLowerCase().trim() + "&slug=" + source.substring(comma + 1).toLowerCase().trim();
+		} else try {
+			return "query=" + URLEncoder.encode(source.toLowerCase().trim(), "ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			Log.e("k", "help", e);
 		}
-		return getString(R.string.default_board);
+		return "url=" + getString(R.string.default_board);
 	}
 }
