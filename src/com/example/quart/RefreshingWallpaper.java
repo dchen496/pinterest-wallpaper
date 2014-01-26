@@ -89,6 +89,13 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 			}
 		}
 
+		@Override
+		public void onSurfaceDestroyed(SurfaceHolder sh) {
+			if(timer != null)
+				timer.cancel();
+			timer = null;
+		}
+		
 		// accepted parameters:
 		// url=[a pinterest board url] - must be URL escaped
 		// id=[a pinterest board id]
