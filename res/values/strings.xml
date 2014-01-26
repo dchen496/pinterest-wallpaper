@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Quart</string>
+    <string name="app_name">Pint</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-    <string name="wallpaper_refreshing">Quart</string>
+    <string name="wallpaper_refreshing">Pint</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="board_url">Board Location</string>
     <string name="board_url_summary">Where the images will be from</string>
