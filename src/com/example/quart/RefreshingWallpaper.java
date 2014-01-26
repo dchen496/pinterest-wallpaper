@@ -2,6 +2,7 @@ package com.example.quart;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,6 +28,10 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 	String source;
 	Timer timer;
 	RefreshingWallpaperEngine engine;
+	Cache cache;
+	int loadFailures = 0;
+	int outstandingRequests = 0;
+	Timer loadTimer;
 
 	@Override
 	public void onCreate() {
@@ -35,6 +40,9 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		prefs.registerOnSharedPreferenceChangeListener(this);
 		duration = Integer.parseInt((prefs.getString("list_pinterest_frequency", getString(R.string.default_frequency))));
 		source = (prefs.getString("edittext_pinterest_board_url", getString(R.string.default_board)));
+		cache = new Cache(20);
+		loadTimer = new Timer();
+		(new CacheLoadTask()).run();
 	}
 
 	@Override
@@ -48,6 +56,114 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		return engine;
 	}
 
+	class Cache {
+		private ArrayList<Entry> list;
+		private int capacity;
+		
+		public Cache(int _capacity) {
+			list = new ArrayList<Entry>();
+			capacity = _capacity;
+		}
+		
+		class Entry {
+			long timestamp;
+			Bitmap bitmap;
+		}
+		
+		public void expire() {
+			long mintime = System.currentTimeMillis() - 1000*3600;
+			for(int i = list.size() - 1; i >= 0; i--) {
+				if(list.get(i).timestamp < mintime) {
+					list.remove(i);
+				}
+			}
+		}
+		
+		public Bitmap getRandom() {
+			if(list.size() == 0)
+				return null;
+			return list.get((int)(Math.random() * list.size())).bitmap; 
+		}
+		
+		public int cap() {
+			return capacity;
+		}
+		
+		public void setCap(int _capacity) {
+			if(_capacity < 1)
+				return;
+			capacity = _capacity;
+		}
+		
+		public int size() {
+			return list.size();
+		}
+		
+		public boolean add(Bitmap b) {
+			if(list.size() >= capacity)
+				return false;
+			for(int i = 0; i < list.size(); i++) {
+				if(list.get(i).bitmap.equals(b)) {
+					return false;
+				}
+			}
+			Entry e = new Entry();
+			e.bitmap = b;
+			e.timestamp = System.currentTimeMillis();
+			list.add(e);
+			return true;
+		}
+	}
+	// accepted parameters:
+	// url=[a pinterest board url] - must be URL escaped
+	// id=[a pinterest board id]
+	// user=[user name]&slug=[the board's name, in a format like stairs-and-storage]
+	// query=[a search query]
+	class CacheLoadTask extends TimerTask {
+		public void run() {
+			cache.expire();
+			Log.e("k", "loading");
+			Picasso.with(RefreshingWallpaper.this)
+			.load("http://quart.herokuapp.com/board_images?" + processSource() + "&no-cache="+Double.toString(Math.random()))
+			.into(new CacheTarget());
+		}
+	}
+
+	class CacheTarget implements Target {
+		@Override
+		public void onBitmapFailed(final Drawable d) {
+			outstandingRequests--;
+			Log.e("k", "load failure");
+			loadFailures++;
+			next();
+		}
+
+		@Override
+		public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
+			outstandingRequests--;
+			Log.e("k", "loaded");
+			if(!cache.add(b))
+				cache.setCap(cache.cap()-1);
+			loadFailures = 0;
+			next();
+		}
+		
+		private void next() {
+			for(int i = 0; i < 5; i++) {
+				outstandingRequests++;
+				Log.i("k", Integer.toString(outstandingRequests) + " " + Integer.toString(cache.cap()) + " " + Integer.toString(cache.size()));
+				if(cache.size() + outstandingRequests > cache.cap())
+					loadTimer.schedule(new CacheLoadTask(), 900000);
+				else
+					loadTimer.schedule(new CacheLoadTask(), 500+1000*Math.min(loadFailures,3));
+			}
+		}
+
+		@Override
+		public void onPrepareLoad(final Drawable d) {}
+	}
+
+
 	class RefreshingWallpaperEngine extends Engine {
 		Fader fader;
 
@@ -59,7 +175,11 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		class RefreshTask extends TimerTask {
 			@Override
 			public void run() {
-				load();
+				if(!fader.busy()) {
+					Bitmap b = cache.getRandom();
+					if(b != null)
+						draw(b);
+				}
 			}
 		}
 
@@ -87,38 +207,6 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 					timer.cancel();
 				timer = null;
 			}
-		}
-
-		// accepted parameters:
-		// url=[a pinterest board url] - must be URL escaped
-		// id=[a pinterest board id]
-		// user=[user name]&slug=[the board's name, in a format like stairs-and-storage]
-		public void load() {
-			Log.e("k", "loading");
-			Picasso.with(RefreshingWallpaper.this)
-			.load("http://quart.herokuapp.com/board_images?" + processSource() + "&no-cache="+Double.toString(Math.random()))
-			.into(new CanvasTarget(this));
-		}
-
-		class CanvasTarget implements Target {
-			private RefreshingWallpaperEngine owner;
-
-			public CanvasTarget(final RefreshingWallpaperEngine _owner) {
-				owner = _owner;
-			}
-
-			@Override
-			public void onBitmapFailed(final Drawable d) {}
-
-			@Override
-			public void onBitmapLoaded(final Bitmap b, final LoadedFrom l) {
-				Log.e("k", "loaded");
-				if(!fader.busy())
-					owner.draw(b);
-			}
-
-			@Override
-			public void onPrepareLoad(final Drawable d) {}
 		}
 
 		class Fader {
