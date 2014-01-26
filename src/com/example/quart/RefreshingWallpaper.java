@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.graphics.Bitmap;
@@ -151,6 +152,7 @@ public class RefreshingWallpaper extends WallpaperService implements OnSharedPre
 		engine.onSurfaceChanged(null, 0, 0, 0);
 	}
 
+	@SuppressLint("DefaultLocale")
 	public String processSource() {
 		if (source.trim().startsWith("http")) try {
 			return "url=" + URLEncoder.encode(source.trim(), "ISO-8859-1");
